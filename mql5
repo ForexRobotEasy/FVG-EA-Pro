@@ -1,0 +1,62 @@
+
+//+------------------------------------------------------------------+
+//|                                                 FVG EA Pro       |
+//|                        Developed by Forex Robot Easy Team        |
+//|                          Visit us at forexroboteasy.com          |
+//+------------------------------------------------------------------+
+
+//--- Include necessary libraries
+#include <Trade\Trade.mqh>
+
+//--- Define input parameters
+input double RiskPercentage = 1.0; // Risk percentage per trade
+input double StopLoss = 50.0; // Stop loss in pips
+input double TakeProfit = 100.0; // Take profit in pips
+
+//--- Define global variables
+CTrade trade;
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//|                                                                  |
+//|                            Expert Start                           |
+//|                                                                  |
+//|                                                                  |
+//+------------------------------------------------------------------+
+void OnStart()
+{
+   //--- Initialize trade parameters
+   trade.SetDeviationInPoints(10);
+   trade.SetExpertMagicNumber(123456);
+   
+   //--- Check if there is an open position
+   if(trade.PositionSelect(Symbol()) == false)
+   {
+      //--- Calculate lot size based on risk percentage
+      double lotSize = trade.LotsOptimized(Symbol(), RiskPercentage);
+      
+      //--- Check if lot size is valid
+      if(lotSize > 0)
+      {
+         //--- Calculate stop loss and take profit levels
+         double stopLossLevel = trade.Point() * StopLoss;
+         double takeProfitLevel = trade.Point() * TakeProfit;
+         
+         //--- Open a new position with calculated parameters
+         trade.PositionOpen(Symbol(), OP_BUY, lotSize, Ask, 0, stopLossLevel, takeProfitLevel, 'FVG EA Pro');
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//|                                                                  |
+//|                           Expert Deinit                           |
+//|                                                                  |
+//|                                                                  |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   //--- Close all open positions
+   trade.PositionCloseAll();
+}
